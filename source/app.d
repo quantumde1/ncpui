@@ -111,7 +111,8 @@ void main() {
     float soundDuration = 0.34; // Duration to play the sound
     float soundTimer = 0.0; // Timer to track sound playback
     bool isSoundPlaying = false; // Flag to check if sound is currently playing
-
+    SetGamepadMappings("030000005e040000ea020000050d0000,Xbox Controller,a:b0,b:b1,x:b2,y:b3,back:b6,guide:b8,start:b7,leftstick:b9,rightstick:b10,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5; \\\\
+        030000004c050000c405000011010000,PS4 Controller,a:b1,b:b2,x:b0,y:b3,back:b8,guide:b12,start:b9,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:b11,dpdown:b14,dpleft:b7,dpright:b15,leftx:a0,lefty:a1,rightx:a2,righty:a5,lefttrigger:a3,righttrigger:a4;");
     // Variables to track the selected tile
     int selectedRow = 0;
     int selectedCol = 0;
@@ -142,19 +143,19 @@ void main() {
     while (!WindowShouldClose()) {
         // Handle keyboard input for tile selection
         if (!showBoxArts) {
-            if (IsKeyPressed(KeyboardKey.KEY_W) && selectedRow > 0) {
+            if (IsKeyPressed(KeyboardKey.KEY_W) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_UP) && selectedRow > 0) {
                 selectedRow--;
                 PlaySound(tileChangeSound); // Play sound when changing tile
                 isSoundPlaying = true; // Set sound playing flag
                 soundTimer = soundDuration; // Reset the timer
             }
-            if (IsKeyPressed(KeyboardKey.KEY_S) && selectedRow < rows - 1) {
+            if (IsKeyPressed(KeyboardKey.KEY_S) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN) && selectedRow < rows - 1) {
                 selectedRow++;
                 PlaySound(tileChangeSound); // Play sound when changing tile
                 isSoundPlaying = true; // Set sound playing flag
                 soundTimer = soundDuration; // Reset the timer
             }
-            if (IsKeyPressed(KeyboardKey.KEY_A)) {
+            if (IsKeyPressed(KeyboardKey.KEY_A) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_LEFT)) {
                 if (selectedCol > 0) {
                     selectedCol--;
                     PlaySound(tileChangeSound); // Play sound when changing tile
@@ -177,7 +178,7 @@ void main() {
 					}
                 }
             }
-            if (IsKeyPressed(KeyboardKey.KEY_D)) {
+            if (IsKeyPressed(KeyboardKey.KEY_D) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) {
 				if (selectedCol < cols - 1) {
 					selectedCol++;
 					PlaySound(tileChangeSound); // Play sound when changing tile
@@ -194,7 +195,7 @@ void main() {
 			}
 
             // Check for Enter key press on the "Games" tile
-            if (IsKeyPressed(KeyboardKey.KEY_ENTER) && selectedRow == 0 && selectedCol == 0) {
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 0 && selectedCol == 0) {
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
 				PlaySound(selectSound);
@@ -302,13 +303,13 @@ void main() {
             );
 
             // Handle box art selection
-            if (IsKeyPressed(KeyboardKey.KEY_A) && selectedBoxArtIndex > 0) {
+            if (IsKeyPressed(KeyboardKey.KEY_A)  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_LEFT) && selectedBoxArtIndex > 0) {
                 selectedBoxArtIndex--; // Move left
 				PlaySound(tileChangeSound);
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
             }
-            if (IsKeyPressed(KeyboardKey.KEY_D) && selectedBoxArtIndex < boxArtTextures.length - 1) {
+            if (IsKeyPressed(KeyboardKey.KEY_D) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT) && selectedBoxArtIndex < boxArtTextures.length - 1) {
                 selectedBoxArtIndex++; // Move right
 				PlaySound(tileChangeSound);
 				isSoundPlaying = true;
@@ -323,7 +324,7 @@ void main() {
             EndDrawing();
 
             // Check for ESC key to go back
-            if (IsKeyPressed(KeyboardKey.KEY_N)) {
+            if (IsKeyPressed(KeyboardKey.KEY_N)  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT) ) {
 				isSoundPlaying = true;
 				PlaySound(backSound);
 				soundTimer = soundDuration;
