@@ -1,0 +1,16 @@
+{
+	"authors": [
+		"quantumde1"
+	],
+	"copyright": "Copyright © 2024, quantumde1",
+	"dependencies": {
+		"raylib-d": "~>5.0.1"
+	},
+	"description": "ui for POSIX systems",
+	"license": "MIT",
+	"name": "ncpui",
+	"libs": [ "raylib" ],
+	"lflags-posix" : ["-L."],
+	"lflags-osx" : ["-rpath", "@executable_path/"],
+	"lflags-linux" : ["-rpath=$$ORIGIN"]
+}

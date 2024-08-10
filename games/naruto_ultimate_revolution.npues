@@ -1,0 +1,2 @@
+command="wine /home/$USER/.wine/drive_c/Games/Naruto Ultimate Ninja Storm Revolution/NSUNSR.exe"
+name="Naruto Ultimate Ninja Storm Revolution"

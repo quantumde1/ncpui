@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/ncpui
+ncpui.so
+ncpui.dylib
+ncpui.dll
+ncpui.a
+ncpui.lib
+ncpui-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
