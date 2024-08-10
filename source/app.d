@@ -5,6 +5,9 @@ import std.conv;
 import std.datetime; // Import for time handling
 import std.format;
 import core.stdc.stdlib;
+import std.string;
+import std.conv;
+import std.process;
 
 const float tileWidthFraction = 1.0 / 6.0; // Width as a fraction of screen width
 const float tileHeightFraction = 1.0 / 5.0; // Height as a fraction of screen height
@@ -47,47 +50,60 @@ string getCurrentTime() {
     return format("%02d:%02d", now.hour, now.minute); // Format as HH:MM:SS
 }
 
-void drawBoxArts(Texture2D[] boxArtTextures, int selectedBoxArtIndex) {
+void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] names, string[] commands) {
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
     
-    // Calculate box art dimensions based on screen size
-    int boxArtWidth = cast(int)(screenWidth * (1.0 / 5.0)); // 1/5 of screen width
     int boxArtHeight = cast(int)(screenHeight * (1.0 / 2.0)); // 1/2 of screen height
-    
+    int boxArtWidth = cast(int)(screenWidth * (1.0 / 5.0)); // 1/5 of screen width
+    int selectedBoxArtHeight = cast(int)(boxArtHeight * 1.03); // 20% bigger than normal box art
+    int selectedBoxArtWidth = cast(int)(boxArtWidth * 1.03); // 20% bigger than normal box art
     int padding = 20; // Padding between box arts
     int startX = 0; // Start from the left corner
     int startY = (screenHeight - boxArtHeight) / 2; // Center vertically
-
+    
     for (int i = 0; i < boxArtTextures.length; i++) {
-        int x = startX + i * (boxArtWidth + padding);
-        int y = startY; // Y position for the box arts
-
-        // Draw the white rectangle for the box art and label
-        DrawRectangle(x, y, boxArtWidth, boxArtHeight + 30, Colors.WHITE); // Height increased for label space
-
-        // Draw the box art
-        DrawTexturePro(boxArtTextures[i], 
-                       Rectangle(0, 0, cast(float)boxArtTextures[i].width, cast(float)boxArtTextures[i].height), 
-                       Rectangle(x, y, boxArtWidth, boxArtHeight), 
-                       Vector2(0, 0), 
-                       0.0, 
-                       Colors.WHITE);
+        int x = startX;
+        int y = startY;
         
-        // Draw the text below the box art
-        string labelText = "Box Art " ~ (i + 1).to!string; // Customize this text as needed
-        DrawText(cast(char*)labelText, x + (boxArtWidth - MeasureText(cast(char*)labelText, 20)) / 2, y + boxArtHeight + 5, 20, Colors.BLACK);
-
-        // If this box art is selected, upscale it
+        // Draw the white rectangle for the box art and label
         if (i == selectedBoxArtIndex) {
-            DrawRectangle(x - 10, y - 10, boxArtWidth + 20, boxArtHeight + 50, Colors.LIGHTGRAY); // Highlight selected box art
+            DrawRectangle(x - 10, y - 10, selectedBoxArtWidth + 20, selectedBoxArtHeight + 50, Colors.WHITE); // Upscale the rectangle for the selected box art
+        } else {
+            DrawRectangle(x, y, boxArtWidth, boxArtHeight + 30, Colors.WHITE); // Normal size for other box arts
+        }
+        
+        // Draw the box art
+        if (i == selectedBoxArtIndex) {
             DrawTexturePro(boxArtTextures[i], 
                            Rectangle(0, 0, cast(float)boxArtTextures[i].width, cast(float)boxArtTextures[i].height), 
-                           Rectangle(x - 10, y - 10, boxArtWidth + 20, boxArtHeight + 20), 
+                           Rectangle(x, y, selectedBoxArtWidth, selectedBoxArtHeight), 
+                           Vector2(0, 0), 
+                           0.0, 
+                           Colors.WHITE);
+        } else {
+            DrawTexturePro(boxArtTextures[i], 
+                           Rectangle(0, 0, cast(float)boxArtTextures[i].width, cast(float)boxArtTextures[i].height), 
+                           Rectangle(x, y, boxArtWidth, boxArtHeight), 
                            Vector2(0, 0), 
                            0.0, 
                            Colors.WHITE);
         }
+        if (i == selectedBoxArtIndex && IsKeyPressed(KeyboardKey.KEY_ENTER)) {
+            executeShell(commands[i]);
+        }
+        if (i == selectedBoxArtIndex && IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
+            executeShell(commands[i]);
+        }
+        // Draw the text under the box art
+        if (i == selectedBoxArtIndex) {
+            DrawText(names[i].toStringz, x + (selectedBoxArtWidth - MeasureText(names[i].toStringz, 20)) / 2, y + selectedBoxArtHeight + 5, 20, Colors.BLACK);
+        } else {
+            DrawText(names[i].toStringz, x + (boxArtWidth - MeasureText(names[i].toStringz, 18)) / 2, y + boxArtHeight + 5, 18, Colors.BLACK);
+        }
+        
+        // Move to the next position
+        startX += boxArtWidth + padding;
     }
 }
 
@@ -125,18 +141,34 @@ void main() {
     
     // Current page variable
     bool isPage1 = true;
-
+    // Load the box art textures from the gameslist.txt file
+    string gameData = readText("games/listgames.txt");
+    string[] entries = split(gameData, "[entry]");
+    Texture2D[] boxArtTextures = new Texture2D[entries.length - 1]; // Allocate space for the textures
+    string[] names = new string[entries.length - 1];
+    string[] commands = new string[entries.length - 1];
+    for (int i = 1; i < entries.length; i++) { // Start from 1 to skip the first empty entry
+        string[] lines = split(entries[i], "\n");
+        string image = "";
+        string name = "";
+        string execut = "";
+        foreach (line; lines) {
+            if (startsWith(line, "[icon]")) {
+                image = line["[icon]".length .. $ - "[/icon]".length];
+            } else if (startsWith(line, "[name]")) {
+                name = line["[name]".length .. $ - "[/name]".length];
+            } else if (startsWith(line, "[executable]")) {
+                execut = line["[executable]".length .. $ - "[/executable]".length];
+            }
+        }
+        commands[i -1] = execut;
+        names[i - 1] = name;
+        boxArtTextures[i - 1] = LoadTexture(image.toStringz);
+    }
+    
     // Variables for scaling
     float currentScale = 1.0; // Current scale of the tile
     float targetScale = 1.0; // Target scale of the tile
-
-    // Load box art textures
-    Texture2D[] boxArtTextures = [
-        LoadTexture("res/boxart.png"),
-        LoadTexture("res/boxart.png"),
-        LoadTexture("res/boxart.png")
-    ];
-
     // Main game loop
     Texture2D mapTexture = LoadTexture("res/background.png");
     bool showBoxArts = false; // Flag to show box arts screen
@@ -149,7 +181,7 @@ void main() {
                 isSoundPlaying = true; // Set sound playing flag
                 soundTimer = soundDuration; // Reset the timer
             }
-            if (IsKeyPressed(KeyboardKey.KEY_S)&& selectedRow > 0 || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN) && selectedRow < rows - 1) {
+            if (IsKeyPressed(KeyboardKey.KEY_S)&& selectedRow < rows -1 || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN) && selectedRow < rows - 1) {
                 selectedRow++;
                 PlaySound(tileChangeSound); // Play sound when changing tile
                 isSoundPlaying = true; // Set sound playing flag
@@ -201,7 +233,25 @@ void main() {
 				PlaySound(selectSound);
                 showBoxArts = true; // Show the box arts screen
             }
-
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 1 && selectedCol == 0  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 1 && selectedCol == 0) {
+				isSoundPlaying = true;
+				soundTimer = soundDuration;
+				PlaySound(selectSound);
+                executeShell("firefox");
+            }
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 2 && selectedCol == 0  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 2 && selectedCol == 0) {
+				isSoundPlaying = true;
+				soundTimer = soundDuration;
+				PlaySound(selectSound);
+                executeShell("poweroff");
+            }
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 0 && selectedCol == 1  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 0 && selectedCol == 1) {
+				isSoundPlaying = true;
+				soundTimer = soundDuration;
+				PlaySound(selectSound);
+                executeShell("reboot");
+            }
+            
             // Update sound timer
             if (isSoundPlaying) {
                 soundTimer -= GetFrameTime(); // Decrease timer by the time since last frame
@@ -284,7 +334,7 @@ void main() {
             // Draw the clock in the top right corner
             string currentTime = getCurrentTime()~"         "~getenv("USER").to!string;
             int padding = 20; // Padding from the edges
-            DrawText(cast(char*)currentTime, screenWidth - padding - MeasureText(cast(char*)currentTime, 20), padding, 20, Colors.BLACK);
+            DrawText(currentTime.toStringz, screenWidth - padding - MeasureText(currentTime.toStringz, 20), padding, 20, Colors.LIGHTGRAY);
 
             // End drawing
             EndDrawing();
@@ -303,13 +353,13 @@ void main() {
             );
 
             // Handle box art selection
-            if (IsKeyPressed(KeyboardKey.KEY_A)  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_LEFT) && selectedBoxArtIndex > 0) {
+            if (IsKeyPressed(KeyboardKey.KEY_A)  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_LEFT)) {
                 selectedBoxArtIndex--; // Move left
 				PlaySound(tileChangeSound);
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
             }
-            if (IsKeyPressed(KeyboardKey.KEY_D) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT) && selectedBoxArtIndex < boxArtTextures.length - 1) {
+            if (IsKeyPressed(KeyboardKey.KEY_D) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)) {
                 selectedBoxArtIndex++; // Move right
 				PlaySound(tileChangeSound);
 				isSoundPlaying = true;
@@ -319,8 +369,8 @@ void main() {
             // Draw the clock in the top right corner
             string currentTime = getCurrentTime()~"         "~getenv("USER").to!string;
             int padding = 20; // Padding from the edges
-            DrawText(cast(char*)currentTime, GetScreenWidth() - padding - MeasureText(cast(char*)currentTime, 20), padding, 20, Colors.BLACK);
-            drawBoxArts(boxArtTextures, selectedBoxArtIndex); // Draw the box arts and text
+            DrawText(currentTime.toStringz, GetScreenWidth() - padding - MeasureText(currentTime.toStringz, 20), padding, 20, Colors.LIGHTGRAY);
+            drawBoxArts(selectedBoxArtIndex, boxArtTextures, names, commands); // Draw the box arts and text
             EndDrawing();
 
             // Check for ESC key to go back
@@ -336,9 +386,6 @@ void main() {
     // Unload resources
     for (int i = 0; i < menuIcons.length; i++) {
         UnloadTexture(menuIcons[i]);
-    }
-    for (int i = 0; i < boxArtTextures.length; i++) {
-        UnloadTexture(boxArtTextures[i]); // Unload each box art texture
     }
     UnloadTexture(mapTexture);
     UnloadSound(tileChangeSound); // Unload the sound
