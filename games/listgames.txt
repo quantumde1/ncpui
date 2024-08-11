@@ -1,5 +1,5 @@
 [entry]
-[executable]wine NSUNSR.exe[/executable]
+[executable]chdir ~/.wine/drive_c/Games/naruto && wine NSUNSR.exe[/executable]
 [name]Naruto Ultimate Ninja Storm Revolution[/name]
 [icon]res/boxart.png[/icon]
 [/entry]

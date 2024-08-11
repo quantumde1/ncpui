@@ -3,8 +3,9 @@ import std.process;
 
 void main() {
     auto logFile = File("myapp_error.log", "w");
+    Config config = Config(Config.Flags.detached, null, null);
     auto pid = spawnProcess("myapp", stdin, stdout, logFile,
-                            Config.retainStderr | Config.suppressConsole);
+    config);
                             
     scope(exit)
     {

@@ -89,11 +89,11 @@ void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] n
                            Colors.WHITE);
         }
         if (i == selectedBoxArtIndex && IsKeyPressed(KeyboardKey.KEY_ENTER)) {
-            spawnShell(commands[i], Config.detached);
+            spawnShell(commands[i], null, Config.detached);
             
         }
         if (i == selectedBoxArtIndex && IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
-            spawnShell(commands[i], Config.detached);
+            spawnShell(commands[i], null, Config.detached);
         }
 
         // Draw the text under the box art
