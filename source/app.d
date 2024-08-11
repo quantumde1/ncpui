@@ -90,10 +90,11 @@ void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] n
         }
         if (i == selectedBoxArtIndex && IsKeyPressed(KeyboardKey.KEY_ENTER)) {
             spawnShell(commands[i], null, Config.detached);
-            
+            CloseWindow();
         }
-        if (i == selectedBoxArtIndex && IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
+        if (i == selectedBoxArtIndex && IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
             spawnShell(commands[i], null, Config.detached);
+            CloseWindow();
         }
 
         // Draw the text under the box art
@@ -115,8 +116,8 @@ void main() {
     ToggleFullscreen();
     InitAudioDevice();
     
-    Texture2D[] menuIcons = [LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), 
-        LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), 
+    Texture2D[] menuIcons = [LoadTexture("res/gameslogo.png"), LoadTexture("res/firefox.png"), LoadTexture("res/poweroff.png"), 
+        LoadTexture("res/terminal.png"), LoadTexture("res/restart.png"), LoadTexture("res/exit.png"), LoadTexture("res/settings.png"), 
         LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), 
         LoadTexture("res/gameslogo.png")];
     
@@ -176,19 +177,19 @@ void main() {
     while (!WindowShouldClose()) {
         // Handle keyboard input for tile selection
         if (!showBoxArts) {
-            if (IsKeyPressed(KeyboardKey.KEY_W)&& selectedRow > 0 || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_UP) && selectedRow > 0) {
+            if (IsKeyPressed(KeyboardKey.KEY_W)&& selectedRow > 0 || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_UP) && selectedRow > 0) {
                 selectedRow--;
                 PlaySound(tileChangeSound); // Play sound when changing tile
                 isSoundPlaying = true; // Set sound playing flag
                 soundTimer = soundDuration; // Reset the timer
             }
-            if (IsKeyPressed(KeyboardKey.KEY_S)&& selectedRow < rows -1 || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN) && selectedRow < rows - 1) {
+            if (IsKeyPressed(KeyboardKey.KEY_S)&& selectedRow < rows -1 || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN) && selectedRow < rows - 1) {
                 selectedRow++;
                 PlaySound(tileChangeSound); // Play sound when changing tile
                 isSoundPlaying = true; // Set sound playing flag
                 soundTimer = soundDuration; // Reset the timer
             }
-            if (IsKeyPressed(KeyboardKey.KEY_A) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_LEFT)) {
+            if (IsKeyPressed(KeyboardKey.KEY_A) || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_LEFT)) {
                 if (selectedCol > 0) {
                     selectedCol--;
                     PlaySound(tileChangeSound); // Play sound when changing tile
@@ -211,7 +212,7 @@ void main() {
 					}
                 }
             }
-            if (IsKeyPressed(KeyboardKey.KEY_D) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) {
+            if (IsKeyPressed(KeyboardKey.KEY_D) || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) {
 				if (selectedCol < cols - 1) {
 					selectedCol++;
 					PlaySound(tileChangeSound); // Play sound when changing tile
@@ -228,34 +229,39 @@ void main() {
 			}
 
             // Check for Enter key press on the "Games" tile
-            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 0 && selectedCol == 0  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 0 && selectedCol == 0) {
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 0 && selectedCol == 0  || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 0 && selectedCol == 0) {
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
 				PlaySound(selectSound);
                 showBoxArts = true; // Show the box arts screen
             }
-            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 1 && selectedCol == 0  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 1 && selectedCol == 0) {
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 1 && selectedCol == 0  || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 1 && selectedCol == 0) {
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
 				PlaySound(selectSound);
-                executeShell("setsid xvkbd & setsid firefox");
-                
+                spawnShell("firefox & xvkbd", null, Config.detached);
+                goto closeApp;
             }
-            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 2 && selectedCol == 0  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 2 && selectedCol == 0) {
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 2 && selectedCol == 0  || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 2 && selectedCol == 0) {
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
 				PlaySound(selectSound);
                 executeShell("loginctl poweroff");
-                
+                goto closeApp;
             }
-            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 0 && selectedCol == 1  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 0 && selectedCol == 1) {
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 0 && selectedCol == 1  || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 0 && selectedCol == 1) {
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
 				PlaySound(selectSound);
                 executeShell("loginctl reboot");
-                
+                goto closeApp;
             }
-            
+            if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 2 && selectedCol == 1  || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 0 && selectedCol == 1) {
+				isSoundPlaying = true;
+				soundTimer = soundDuration;
+				PlaySound(selectSound);
+                goto closeApp;
+            }
             // Update sound timer
             if (isSoundPlaying) {
                 soundTimer -= GetFrameTime(); // Decrease timer by the time since last frame
@@ -357,13 +363,13 @@ void main() {
             );
 
             // Handle box art selection
-            if (IsKeyPressed(KeyboardKey.KEY_A)  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_LEFT)) {
+            if (IsKeyPressed(KeyboardKey.KEY_A)  || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_LEFT)) {
                 selectedBoxArtIndex--; // Move left
 				PlaySound(tileChangeSound);
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
             }
-            if (IsKeyPressed(KeyboardKey.KEY_D) || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)) {
+            if (IsKeyPressed(KeyboardKey.KEY_D) || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)) {
                 selectedBoxArtIndex++; // Move right
 				PlaySound(tileChangeSound);
 				isSoundPlaying = true;
@@ -378,7 +384,7 @@ void main() {
             EndDrawing();
 
             // Check for ESC key to go back
-            if (IsKeyPressed(KeyboardKey.KEY_N)  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT) ) {
+            if (IsKeyPressed(KeyboardKey.KEY_N)  || IsGamepadButtonPressed(1, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT) ) {
 				isSoundPlaying = true;
 				PlaySound(backSound);
 				soundTimer = soundDuration;
