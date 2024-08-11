@@ -60,8 +60,7 @@ void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] n
     int selectedBoxArtWidth = cast(int)(boxArtWidth * 1.03); // 20% bigger than normal box art
     int padding = 20; // Padding between box arts
     int startX = 0; // Start from the left corner
-    int startY = (screenHeight - boxArtHeight) / 2; // Center vertically
-    
+    int startY = (screenHeight - boxArtHeight) / 2; // Center verticall
     for (int i = 0; i < boxArtTextures.length; i++) {
         int x = startX;
         int y = startY;
@@ -90,13 +89,13 @@ void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] n
                            Colors.WHITE);
         }
         if (i == selectedBoxArtIndex && IsKeyPressed(KeyboardKey.KEY_ENTER)) {
-            executeShell(commands[i]);
+            spawnShell(commands[i], Config.detached);
             
         }
         if (i == selectedBoxArtIndex && IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
-            executeShell(commands[i]);
-            
+            spawnShell(commands[i], Config.detached);
         }
+
         // Draw the text under the box art
         if (i == selectedBoxArtIndex) {
             DrawText(names[i].toStringz, x + (selectedBoxArtWidth - MeasureText(names[i].toStringz, 20)) / 2, y + selectedBoxArtHeight + 5, 20, Colors.BLACK);
@@ -112,7 +111,7 @@ void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] n
 void main() {
     // Initialize the window
     InitWindow(GetScreenWidth(), GetScreenHeight(), "NCPUI");
-    SetTargetFPS(60);
+    SetTargetFPS(20);
     ToggleFullscreen();
     InitAudioDevice();
     
