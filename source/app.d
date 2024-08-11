@@ -17,7 +17,7 @@ const int cols = 4; // Number of columns
 const float scaleFactor = 1.1; // Scale factor for the selected tile
 const float scaleSpeed = 0.1; // Speed of scaling
 
-void drawTile(Color tileColor, string tileText, Texture2D tileImage, int x, int y, int width, int height, bool isSelected) {
+void drawTile(Color tileColor, string tileText, Texture2D tileImage, int x, int y, int width, int height, bool isSelected, Font fontTtf) {
     // Draw the tile background
     DrawRectangle(x, y, width, height, tileColor);
     
@@ -42,7 +42,7 @@ void drawTile(Color tileColor, string tileText, Texture2D tileImage, int x, int 
     }
     
     // Draw the tile text at the left bottom corner
-    DrawText(cast(char*)tileText, x + 10, y + height - 30, 20, Colors.BLACK); // Adjusted y position
+    DrawTextEx(fontTtf, cast(char*)tileText, Vector2(x + 10, y + height - 30), fontTtf.baseSize-3, 1, Colors.BLACK); // Adjusted y position
 }
 
 string getCurrentTime() {
@@ -50,7 +50,7 @@ string getCurrentTime() {
     return format("%02d:%02d", now.hour, now.minute); // Format as HH:MM:SS
 }
 
-void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] names, string[] commands) {
+void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] names, string[] commands, Font fontTtf) {
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
     
@@ -99,9 +99,9 @@ void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] n
 
         // Draw the text under the box art
         if (i == selectedBoxArtIndex) {
-            DrawText(names[i].toStringz, x + (selectedBoxArtWidth - MeasureText(names[i].toStringz, 20)) / 2, y + selectedBoxArtHeight + 5, 20, Colors.BLACK);
+            DrawTextEx(fontTtf, names[i].toStringz, Vector2(x + (selectedBoxArtWidth - MeasureTextEx(fontTtf, names[i].toStringz, 20, 1).x) / 2, y + selectedBoxArtHeight + 5), 21, 1, Colors.BLACK);
         } else {
-            DrawText(names[i].toStringz, x + (boxArtWidth - MeasureText(names[i].toStringz, 18)) / 2, y + boxArtHeight + 5, 18, Colors.BLACK);
+            DrawTextEx(fontTtf, names[i].toStringz, Vector2(x + (boxArtWidth - MeasureTextEx(fontTtf, names[i].toStringz, 18, 1).x) / 2, y + boxArtHeight + 5), 21, 1, Colors.BLACK);
         }
         
         // Move to the next position
@@ -115,7 +115,8 @@ void main() {
     SetTargetFPS(20);
     ToggleFullscreen();
     InitAudioDevice();
-    
+    Font fontTtf = LoadFontEx("res/roboto_thin.ttf", 32, null, 250);
+    Font fontTtff = LoadFontEx("res/roboto_regular.ttf", 32, null, 250);
     Texture2D[] menuIcons = [LoadTexture("res/gameslogo.png"), LoadTexture("res/firefox.png"), LoadTexture("res/poweroff.png"), 
         LoadTexture("res/terminal.png"), LoadTexture("res/restart.png"), LoadTexture("res/exit.png"), LoadTexture("res/settings.png"), 
         LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), LoadTexture("res/gameslogo.png"), 
@@ -310,10 +311,10 @@ void main() {
             int startY = (screenHeight - gridHeight) / 2 + 20; // Add gap for title
 
             // Draw the page titles
-            Color page1Color = isPage1 ? Colors.BLACK : Colors.LIGHTGRAY; // Black if selected, light gray if not
-            Color page2Color = isPage1 ? Colors.LIGHTGRAY : Colors.BLACK; // Light gray if not selected, black if selected
-            DrawText(cast(char*)"Page 1", (screenWidth - MeasureText(cast(char*)"Page 1", 20)) / 2 - 50, startY - 30, 20, page1Color); // Draw Page 1 title
-            DrawText(cast(char*)"Page 2", (screenWidth - MeasureText(cast(char*)"Page 2", 20)) / 2 + 50, startY - 30, 20, page2Color); // Draw Page 2 title
+            Color page1Color = isPage1 ? Colors.BLACK : Colors.WHITE; // Black if selected, light gray if not
+            Color page2Color = isPage1 ? Colors.WHITE : Colors.BLACK; // Light gray if not selected, black if selected
+            DrawTextEx(fontTtf, cast(char*)"main", Vector2((screenWidth - MeasureTextEx(fontTtf, cast(char*)"Page 1", 30, 1).x) / 2 - 50, startY -40), fontTtf.baseSize+1, 1, page1Color);
+            DrawTextEx(fontTtf, cast(char*)"system", Vector2((screenWidth - MeasureTextEx(fontTtf, cast(char*)"Page 2", 30, 1).x) / 2 + 50, startY - 40), fontTtf.baseSize+1, 1, page2Color); // Draw Page 2 title
 
             // Draw the grid of tiles
             string[] currentMenuPoints = isPage1 ? menuPointsPage1 : menuPointsPage2; // Select the current menu points
@@ -337,7 +338,7 @@ void main() {
                     }
 
                     Color tileColor = (row == selectedRow && col == selectedCol) ? Colors.DARKGREEN : Color(43, 122, 63, 255); // Change color if selected
-                    drawTile(tileColor, currentMenuPoints[col * rows + row], menuIcons[col * rows + row], currentX, currentY, currentTileWidth, currentTileHeight, row == selectedRow && col == selectedCol);
+                    drawTile(tileColor, currentMenuPoints[col * rows + row], menuIcons[col * rows + row], currentX, currentY, currentTileWidth, currentTileHeight, row == selectedRow && col == selectedCol, fontTtff);
                 }
             }
 
@@ -380,7 +381,7 @@ void main() {
             string currentTime = getCurrentTime()~"         "~getenv("USER").to!string;
             int padding = 20; // Padding from the edges
             DrawText(currentTime.toStringz, GetScreenWidth() - padding - MeasureText(currentTime.toStringz, 20), padding, 20, Colors.LIGHTGRAY);
-            drawBoxArts(selectedBoxArtIndex, boxArtTextures, names, commands); // Draw the box arts and text
+            drawBoxArts(selectedBoxArtIndex, boxArtTextures, names, commands, fontTtff); // Draw the box arts and text
             EndDrawing();
 
             // Check for ESC key to go back
@@ -398,6 +399,7 @@ void main() {
         UnloadTexture(menuIcons[i]);
     }
     closeApp: UnloadTexture(mapTexture);
+    UnloadFont(fontTtf);
     UnloadSound(tileChangeSound); // Unload the sound
 	UnloadSound(changePageSound);
     CloseWindow();
