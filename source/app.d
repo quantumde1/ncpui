@@ -91,11 +91,11 @@ void drawBoxArts(int selectedBoxArtIndex, Texture2D[] boxArtTextures, string[] n
         }
         if (i == selectedBoxArtIndex && IsKeyPressed(KeyboardKey.KEY_ENTER)) {
             executeShell(commands[i]);
-            CloseWindow();
+            
         }
         if (i == selectedBoxArtIndex && IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
             executeShell(commands[i]);
-            CloseWindow();
+            
         }
         // Draw the text under the box art
         if (i == selectedBoxArtIndex) {
@@ -240,21 +240,21 @@ void main() {
 				soundTimer = soundDuration;
 				PlaySound(selectSound);
                 executeShell("setsid xvkbd & setsid firefox");
-                goto closeApp;
+                
             }
             if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 2 && selectedCol == 0  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 2 && selectedCol == 0) {
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
 				PlaySound(selectSound);
                 executeShell("loginctl poweroff");
-                goto closeApp;
+                
             }
             if (IsKeyPressed(KeyboardKey.KEY_ENTER)&& selectedRow == 0 && selectedCol == 1  || IsGamepadButtonPressed(0, GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN) && selectedRow == 0 && selectedCol == 1) {
 				isSoundPlaying = true;
 				soundTimer = soundDuration;
 				PlaySound(selectSound);
                 executeShell("loginctl reboot");
-                goto closeApp;
+                
             }
             
             // Update sound timer
